@@ -9,9 +9,11 @@ import TrendSection from '@/app/(afterLogin)/_component/TrendSection';
 import FollowRecommend from '@/app/(afterLogin)/_component/FollowRecommend';
 
 export default function AfterLoginLayout({
-  children
+  children,
+  modal
 }: {
   children: ReactNode;
+  modal: ReactNode;
 }) {
   return (
     <div className={style.container}>
@@ -59,6 +61,7 @@ export default function AfterLoginLayout({
           </section>
         </div>
       </div>
+      {modal}
     </div>
   );
 }
