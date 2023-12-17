@@ -11,6 +11,14 @@ export const {
     signIn: '/i/flow/login',
     newUser: '/i/flow/signup'
   },
+  // callbacks: { auth에서 막는 방법
+  //   async authorized({ request, auth }) {
+  //     if (!auth) {
+  //       return NextResponse.redirect(`http://localhost:3000/i/flow/login`);
+  //     }
+  //     return true;
+  //   }
+  // },
   providers: [
     CredentialsProvider({
       async authorize(credentials) {

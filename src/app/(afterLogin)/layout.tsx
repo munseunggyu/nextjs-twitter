@@ -8,14 +8,16 @@ import LogoutButton from '@/app/(afterLogin)/_component/LogoutButton';
 import TrendSection from '@/app/(afterLogin)/_component/TrendSection';
 import FollowRecommend from '@/app/(afterLogin)/_component/FollowRecommend';
 import RightSearchZone from './_component/RightSearchZone';
+import { auth } from '@/auth';
 
-export default function AfterLoginLayout({
+export default async function AfterLoginLayout({
   children,
   modal
 }: {
   children: ReactNode;
   modal: ReactNode;
 }) {
+  const session = await auth();
   return (
     <div className={style.container}>
       <header className={style.leftSectionWrapper}>
@@ -26,15 +28,19 @@ export default function AfterLoginLayout({
                 <Image src={ZLogo} alt="z.com로고" width={40} height={40} />
               </div>
             </Link>
-            <nav>
-              <ul>
-                <NavMenu />
-              </ul>
-              <Link href="/compose/tweet" className={style.postButton}>
-                게시하기
-              </Link>
-            </nav>
-            <LogoutButton />
+            {session?.user && (
+              <>
+                <nav>
+                  <ul>
+                    <NavMenu />
+                  </ul>
+                  <Link href="/compose/tweet" className={style.postButton}>
+                    게시하기
+                  </Link>
+                </nav>
+                <LogoutButton />
+              </>
+            )}
           </div>
         </section>
       </header>
