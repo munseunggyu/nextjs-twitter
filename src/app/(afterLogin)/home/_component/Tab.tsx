@@ -1,9 +1,11 @@
 'use client';
+import { TabContext } from './TabProvider';
 import style from './tab.module.css';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 export default function Tab() {
-  const [tab, setTab] = useState('rec');
+  const { tab, setTab } = useContext(TabContext);
+  // const [tab, setTab] = useState('rec');
 
   const onClickRec = () => {
     setTab('rec');
