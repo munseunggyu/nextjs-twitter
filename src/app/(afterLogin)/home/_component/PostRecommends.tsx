@@ -12,20 +12,21 @@ import { Fragment, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 export default function PostRecommends() {
-  const { data, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery<
-    IPost[],
-    Object,
-    InfiniteData<IPost[]>,
-    [_1: string, _2: string],
-    number
-  >({
-    queryKey: ['posts', 'recommends'],
-    queryFn: getPostRecommends,
-    initialPageParam: 0,
-    getNextPageParam: lastPage => lastPage.at(-1)?.postId,
-    staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
-    gcTime: 300 * 1000
-  });
+  const { data, fetchNextPage, hasNextPage, isFetching, isPending, isLoading } =
+    useInfiniteQuery<
+      IPost[],
+      Object,
+      InfiniteData<IPost[]>,
+      [_1: string, _2: string],
+      number
+    >({
+      queryKey: ['posts', 'recommends'],
+      queryFn: getPostRecommends,
+      initialPageParam: 0,
+      getNextPageParam: lastPage => lastPage.at(-1)?.postId,
+      staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
+      gcTime: 300 * 1000
+    });
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -41,6 +42,10 @@ export default function PostRecommends() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  if (isPending) {
+    <div>loading 중...</div>;
+  }
 
   return (
     <>
