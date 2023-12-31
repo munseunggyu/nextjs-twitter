@@ -4,7 +4,7 @@ export default async function getPostRecommends({
   pageParam?: number;
 }) {
   const res = await fetch(
-    `http://localhost:9090/api/postRecommends/?cursor=${pageParam}`,
+    `http://localhost:9090/api/posts/recommends/?cursor=${pageParam}&likes=1`,
     {
       next: {
         tags: ['posts', 'recommends']
