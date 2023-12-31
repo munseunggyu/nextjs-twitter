@@ -3,10 +3,14 @@
 import { signOut, useSession } from 'next-auth/react';
 import style from './logoutButton.module.css';
 import { useRouter } from 'next/navigation';
+import { Session } from '@auth/core/types';
 
-export default function LogoutButton() {
+type IProps = {
+  me: Session;
+};
+
+export default function LogoutButton({ me }: IProps) {
   const router = useRouter();
-  const { data: me } = useSession();
 
   const onLogout = () => {
     signOut({

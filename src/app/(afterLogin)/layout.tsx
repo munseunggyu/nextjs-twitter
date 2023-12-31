@@ -41,7 +41,7 @@ export default async function AfterLoginLayout({
                       게시하기
                     </Link>
                   </nav>
-                  <LogoutButton />
+                  <LogoutButton me={session} />
                 </>
               )}
             </div>
