@@ -2,8 +2,11 @@
 
 import { ChangeEventHandler, FormEventHandler, useRef, useState } from 'react';
 import style from './postForm.module.css';
-import { useSession } from 'next-auth/react';
 import { Session } from '@auth/core/types';
+import TextAreaAutoSize from 'react-textarea-autosize';
+import { constant } from '@/app/constant';
+import { useQueryClient } from '@tanstack/react-query';
+import { Post } from '@/model/Post';
 
 type IProps = {
   me: Session | null;
@@ -12,17 +15,72 @@ type IProps = {
 export default function PostForm({ me }: IProps) {
   const imageRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
+  const [preview, setPreview] = useState<
+    Array<{ dataUrl: string; file: File } | null>
+  >([]);
+  const queryClient = useQueryClient();
 
   const onChange: ChangeEventHandler<HTMLTextAreaElement> = e => {
     setContent(e.target.value);
   };
 
-  const onSubmit: FormEventHandler = e => {
+  const onSubmit: FormEventHandler = async e => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('content', content);
+    preview.forEach(p => {
+      p && formData.append('images', p.file);
+    });
+    try {
+      const res = await fetch(constant.apiUrl + '/api/posts', {
+        method: 'post',
+        credentials: 'include',
+        body: formData
+      });
+      if (res.status === 201) {
+        setContent('');
+        setPreview([]);
+        const newPost = await res.json();
+        queryClient.setQueryData(
+          ['posts', 'recommends'],
+          (prevData: { pages: Post[][] }) => {
+            const shallow = { ...prevData, pages: [...prevData.pages] };
+            shallow.pages[0] = [newPost, ...shallow.pages[0]];
+            console.log('shallow', shallow);
+            return shallow;
+          }
+        );
+      }
+    } catch (error) {}
+    console.log(formData);
   };
 
   const onClickButton = () => {
     imageRef.current?.click();
+  };
+
+  const onRemove = (idx: number) => {
+    setPreview(prev => prev.filter((v, index) => idx !== index));
+  };
+
+  const handlePreview: ChangeEventHandler<HTMLInputElement> = e => {
+    e.preventDefault();
+    if (e.target.files) {
+      Array.from(e.target.files).forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreview(prevPreview => {
+            const prev = [...prevPreview];
+            prev[idx] = {
+              dataUrl: reader.result as string,
+              file
+            };
+            return prev;
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
   };
 
   return (
@@ -33,11 +91,21 @@ export default function PostForm({ me }: IProps) {
         </div>
       </div>
       <div className={style.postInputSection}>
-        <textarea
+        <TextAreaAutoSize
           value={content}
           onChange={onChange}
           placeholder="무슨 일이 일어나고 있나요?"
         />
+        <div>
+          {preview.map(
+            (v, idx) =>
+              v && (
+                <div key={idx} onClick={() => onRemove(idx)}>
+                  <img src={v.dataUrl} alt="미리보기" />
+                </div>
+              )
+          )}
+        </div>
         <div className={style.postButtonSection}>
           <div className={style.footerButtons}>
             <div className={style.footerButtonLeft}>
@@ -46,6 +114,7 @@ export default function PostForm({ me }: IProps) {
                 name="imageFiles"
                 multiple
                 hidden
+                onChange={handlePreview}
                 ref={imageRef}
               />
               <button
