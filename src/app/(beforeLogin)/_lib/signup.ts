@@ -13,6 +13,7 @@ export const signup = async (
   if (!formData.get('id')) {
     return { message: 'no_id' };
   }
+  formData.set('nickname', formData.get('name') as string);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users`,
     {
