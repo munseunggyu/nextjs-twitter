@@ -1,11 +1,17 @@
 'use client';
 
-import { ChangeEventHandler, FormEventHandler, useRef, useState } from 'react';
+import {
+  ChangeEventHandler,
+  FormEvent,
+  FormEventHandler,
+  useRef,
+  useState
+} from 'react';
 import style from './postForm.module.css';
 import { Session } from '@auth/core/types';
 import TextAreaAutoSize from 'react-textarea-autosize';
 import { constant } from '@/app/constant';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Post } from '@/model/Post';
 
 type IProps = {
@@ -19,6 +25,41 @@ export default function PostForm({ me }: IProps) {
     Array<{ dataUrl: string; file: File } | null>
   >([]);
   const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (e: FormEvent) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('content', content);
+      preview.forEach(p => {
+        p && formData.append('images', p.file);
+      });
+      return fetch(constant.apiUrl + '/api/posts', {
+        method: 'post',
+        credentials: 'include',
+        body: formData
+      });
+    },
+    async onSuccess(res) {
+      setContent('');
+      setPreview([]);
+      const newPost = await res.json();
+      if (queryClient.getQueryData(['posts', 'recommends'])) {
+        queryClient.setQueryData(
+          ['posts', 'recommends'],
+          (prevData: { pages: Post[][] }) => {
+            const shallow = { ...prevData, pages: [...prevData.pages] };
+            shallow.pages[0] = [newPost, ...shallow.pages[0]];
+            console.log('shallow', shallow);
+            return shallow;
+          }
+        );
+      }
+    },
+    onError(error) {
+      console.log(error);
+    }
+  });
 
   const onChange: ChangeEventHandler<HTMLTextAreaElement> = e => {
     setContent(e.target.value);
@@ -84,7 +125,7 @@ export default function PostForm({ me }: IProps) {
   };
 
   return (
-    <form className={style.postForm} onSubmit={onSubmit}>
+    <form className={style.postForm} onSubmit={mutation.mutate}>
       <div className={style.postUserSection}>
         <div className={style.postUserImage}>
           {me?.user && <img src={me.user.image as string} alt={me.user.id} />}
