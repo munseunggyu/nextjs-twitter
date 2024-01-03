@@ -4,6 +4,8 @@ import { signOut, useSession } from 'next-auth/react';
 import style from './logoutButton.module.css';
 import { useRouter } from 'next/navigation';
 import { Session } from '@auth/core/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { constant } from '@/app/constant';
 
 type IProps = {
   me: Session;
@@ -11,12 +13,22 @@ type IProps = {
 
 export default function LogoutButton({ me }: IProps) {
   const router = useRouter();
-
+  const queryClient = useQueryClient();
   const onLogout = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['posts']
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['users']
+    });
     signOut({
       redirect: false
     }).then(() => {
-      router.push('/');
+      fetch(constant.apiUrl + '/api/logout', {
+        method: 'post',
+        credentials: 'include'
+      });
+      router.replace('/');
     });
   };
   if (!me?.user) return;
