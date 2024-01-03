@@ -10,10 +10,20 @@ import { getUserPosts } from './_lib/getUserPosts';
 import UserPosts from './_component/UserPosts';
 import UserInfo from './_component/UserInfo';
 import { getUserServer } from './_lib/getUserServer';
+import { User } from '@/model/User';
 
 type IProps = {
   params: { username: string };
 };
+
+export async function generateMeatadata({ params }: IProps) {
+  const user: User = await getUserServer({
+    queryKey: ['users', params.username]
+  });
+  return {
+    title: `${user.nickname}의 프로필`
+  };
+}
 
 export default async function Profile({ params }: IProps) {
   const queryClient = new QueryClient();
