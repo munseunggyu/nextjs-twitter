@@ -5,6 +5,8 @@ import style from './followRecommend.module.css';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { constant } from '@/app/constant';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { MouseEventHandler } from 'react';
 
 type IProps = {
   user: User;
@@ -110,7 +112,8 @@ export default function FollowRecommend({ user }: IProps) {
     onSettled() {}
   });
 
-  const onFollow = () => {
+  const onFollow: MouseEventHandler<HTMLButtonElement> = e => {
+    e.preventDefault();
     if (followed) {
       unfollow.mutate();
     } else {
@@ -119,7 +122,7 @@ export default function FollowRecommend({ user }: IProps) {
   };
 
   return (
-    <div className={style.container}>
+    <Link href={`${user.id}`} className={style.container}>
       <div className={style.userLogoSection}>
         <div className={style.userLogo}>
           <img src={user.image} alt={user.id} />
@@ -134,6 +137,6 @@ export default function FollowRecommend({ user }: IProps) {
           <button onClick={onFollow}>{followed ? '팔로잉' : '팔로우'}</button>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
