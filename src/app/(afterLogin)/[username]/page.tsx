@@ -21,7 +21,17 @@ export async function generateMeatadata({ params }: IProps) {
     queryKey: ['users', params.username]
   });
   return {
-    title: `${user.nickname}의 프로필`
+    title: `${user.nickname}의 프로필`,
+    openGraph: {
+      title: `${user.nickname}의 프로필`,
+      images: [
+        {
+          url: '실제 사이트 주소 ' + user.image,
+          width: 400,
+          height: 400
+        }
+      ]
+    }
   };
 }
 
