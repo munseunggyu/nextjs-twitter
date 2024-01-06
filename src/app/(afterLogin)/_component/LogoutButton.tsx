@@ -28,6 +28,7 @@ export default function LogoutButton({ me }: IProps) {
         method: 'post',
         credentials: 'include'
       });
+      router.refresh();
       router.replace('/');
     });
   };
