@@ -9,10 +9,11 @@ import {
   useEffect,
   useState
 } from 'react';
-// import useSocket from "@/app/(afterLogin)/messages/[room]/_lib/useSocket";
+
 import { useSession } from 'next-auth/react';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { Message } from '@/model/Message';
+import useSocket from '../_lib/useSocket';
 // import {useMessageStore} from "@/store/message";
 
 interface Props {
@@ -22,13 +23,20 @@ interface Props {
 export default function MessageForm({ id }: Props) {
   const [content, setContent] = useState('');
   // const setGoDown = useMessageStore().setGoDown;
-  // const [socket] = useSocket();
+  const [socket] = useSocket();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const onChangeContent: ChangeEventHandler<HTMLTextAreaElement> = e => {
     setContent(e.target.value);
   };
-  const onSubmit = () => {};
+  const onSubmit = () => {
+    socket?.emit('sendMessage', {
+      senderId: session?.user?.email,
+      receiverId: id,
+      content
+    });
+    setContent('');
+  };
 
   const onEnter: KeyboardEventHandler<HTMLTextAreaElement> = e => {
     console.log(e.key === 'Enter', e);
@@ -44,6 +52,13 @@ export default function MessageForm({ id }: Props) {
       setContent('');
     }
   };
+
+  useEffect(() => {
+    socket?.on('receiveMessage', data => {});
+    return () => {
+      socket?.off('receiveMessage');
+    };
+  }, [socket]);
 
   return (
     <div className={style.formZone}>
